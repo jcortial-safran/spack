@@ -1,0 +1,68 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a0cb9c4..4846c13 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,18 +1,17 @@
+
+-cmake_minimum_required(VERSION 2.8)
+-set(CMAKE_BUILD_TYPE  "Release")
+-set(CMAKE_CXX_FLAGS   "-w -O3")
+-set(CMAKE_C_FLAGS   "-w -O3")
+-add_definitions("-w")
++cmake_minimum_required(VERSION 3.8)
++
+ set(CMAKE_MACOSX_RPATH 1)
+ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+-set(CMAKE_INSTALL_RPATH "$ENV{HOME}/lib")
+-set(CMAKE_INSTALL_NAME_DIR "$ENV{HOME}/lib")
+-#INCLUDE_DIRECTORIES(  "$ENV{HOME}/include")
+-#LINK_DIRECTORIES(     "$ENV{HOME}/lib")
+-#SET(CMAKE_SKIP_BUILD_RPATH  TRUE)
+
++#Path management
++if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
++    set (CMAKE_INSTALL_PREFIX "$ENV{HOME}"
++        CACHE PATH "Default install prefix" FORCE)
++endif()
+
++set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
++set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+
+ macro(DATE RESULT)
+     if(WIN32)
+@@ -64,31 +63,22 @@ IF(APPLE)
+ elseif(UNIX)
+ 	add_library(           Medit3D SHARED ${sources})
+ 	find_package(GLUT REQUIRED)
+-	include_directories(${GLUT_INCLUDE_DIRS})
+-	link_directories(${GLUT_LIBRARY_DIRS})
+-	add_definitions(${GLUT_DEFINITIONS})
+ 	if(NOT GLUT_FOUND)
+ 		message(ERROR " GLUT not found!")
+ 	endif(NOT GLUT_FOUND)
+ 	find_package(OpenGL REQUIRED)
+-	include_directories(${OpenGL_INCLUDE_DIRS})
+-	link_directories(${OpenGL_LIBRARY_DIRS})
+-	add_definitions(${OpenGL_DEFINITIONS})
+ 	if(NOT OPENGL_FOUND)
+ 		message(ERROR " OPENGL not found!")
+ 	endif(NOT OPENGL_FOUND)
+-	set(GL_LIBS ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} )
+
+-	target_link_libraries( Medit3D ${GL_LIBS})
+-	INSTALL(               TARGETS Medit3D LIBRARY  DESTINATION "$ENV{HOME}/lib")
+-	INSTALL(               FILES ${hea} DESTINATION "$ENV{HOME}/include")
++	target_link_libraries(Medit3D GLUT::GLUT OpenGL::OpenGL OpenGL::GLU)
++	install(TARGETS Medit3D LIBRARY  DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
++	install(FILES ${hea} DESTINATION "${CMAKE_INSTALL_PREFIX}/include")
+
+ ENDIF()
+
+-target_link_libraries( Medit3D ${GL_LIBS})
+-
+
+ project(medit)
+ add_executable(        medit src/medit.c)
+ target_link_libraries( medit Medit3D)# ${GL_LIBS})
+-INSTALL(               TARGETS medit RUNTIME DESTINATION "$ENV{HOME}/bin")
++INSTALL(               TARGETS medit RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
